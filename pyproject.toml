@@ -9,10 +9,21 @@ description = "Typed polymer DSL and compiler for property prediction and invers
 readme = "readme.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
+dependencies = [
+  "lark>=1.2",
+]
 
 [project.scripts]
 polyforge = "polyforge.cli.main:main"
 
 [tool.setuptools]
-packages = ["polyforge", "polyforge.cli"]
+include-package-data = true
 
+[tool.setuptools.packages.find]
+include = ["polyforge*"]
+
+[tool.setuptools.package-data]
+"polyforge.grammar" = ["polyforge.lark"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

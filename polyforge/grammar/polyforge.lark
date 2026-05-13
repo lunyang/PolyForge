@@ -1,0 +1,86 @@
+start: polymer_def
+
+polymer_def: "polymer" IDENT "{" polymer_stmt* "}"
+
+polymer_stmt: monomer_def
+            | architecture_stmt
+            | sequence_stmt
+            | molecular_weight_block
+            | stereochemistry_block
+            | predict_block
+
+monomer_def: "monomer" IDENT "{" monomer_stmt* "}"
+monomer_stmt: smiles_stmt
+            | polymerization_stmt
+            | attach_stmt
+
+smiles_stmt: "smiles" ":" STRING
+polymerization_stmt: "polymerization" ":" IDENT
+attach_stmt: "attach" ":" attach_value
+attach_value: "inferred" | list
+
+architecture_stmt: "architecture" ":" IDENT
+
+sequence_stmt: "sequence" ":" sequence_expr
+sequence_expr: homopolymer_expr
+             | random_copolymer_expr
+             | alternating_copolymer_expr
+             | block_copolymer_expr
+
+homopolymer_expr: "homopolymer" "(" IDENT ")"
+
+random_copolymer_expr: "random_copolymer" "{" random_copolymer_stmt* "}"
+random_copolymer_stmt: units_stmt | composition_stmt
+units_stmt: "units" ":" list
+composition_stmt: "composition" ":" dict
+
+alternating_copolymer_expr: "alternating_copolymer" "(" IDENT "," IDENT ")"
+
+block_copolymer_expr: "block_copolymer" "{" blocks_stmt* "}"
+blocks_stmt: "blocks" ":" block_list
+block_list: "[" [block_expr ("," block_expr)*] "]"
+block_expr: "block" "(" IDENT "," "DP" "=" NUMBER ")"
+
+molecular_weight_block: "molecular_weight" "{" mw_stmt* "}"
+mw_stmt: mn_stmt
+       | mw_stmt2
+       | dpn_stmt
+       | dispersity_stmt
+       | distribution_stmt
+mn_stmt: "Mn" ":" quantity
+mw_stmt2: "Mw" ":" quantity
+dpn_stmt: "DPn" ":" NUMBER
+dispersity_stmt: "dispersity" ":" NUMBER
+distribution_stmt: "distribution" ":" IDENT
+
+stereochemistry_block: "stereochemistry" "{" stereo_stmt* "}"
+stereo_stmt: "tacticity" ":" IDENT
+
+predict_block: "predict" IDENT "{" predict_stmt* "}"
+predict_stmt: IDENT ":" value
+
+?value: STRING
+      | quantity
+      | IDENT
+      | list
+      | dict
+
+list: "[" [value ("," value)*] "]"
+dict: "{" [pair ("," pair)*] "}"
+pair: IDENT ":" value
+
+quantity: NUMBER unit?
+unit: IDENT ("/" IDENT)*
+
+COMMENT: /#[^\n]*/
+LINE_COMMENT: /\/\/[^\n]*/
+
+%import common.CNAME -> IDENT
+%import common.NUMBER
+%import common.ESCAPED_STRING -> STRING
+%import common.WS
+
+%ignore WS
+%ignore COMMENT
+%ignore LINE_COMMENT
+
