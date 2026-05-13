@@ -1,0 +1,9 @@
+polymer InvalidSmiles {
+  monomer Bad {
+    smiles: "C1CC"
+    polymerization: vinyl
+  }
+
+  architecture: linear
+  sequence: homopolymer(Bad)
+}

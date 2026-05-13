@@ -1,0 +1,24 @@
+polymer P_MMA_BA_random {
+  monomer MMA {
+    smiles: "C=C(C)C(=O)OC"
+    polymerization: vinyl
+    attach: inferred
+  }
+
+  monomer BA {
+    smiles: "C=CC(=O)OCCCC"
+    polymerization: vinyl
+    attach: inferred
+  }
+
+  architecture: linear
+  sequence: random_copolymer {
+    units: [MMA, BA]
+    composition: {MMA: 0.70, BA: 0.30}
+  }
+
+  molecular_weight {
+    Mn: 80000 g/mol
+    dispersity: 2.1
+  }
+}

@@ -1,0 +1,17 @@
+polymer BadComposition {
+  monomer MMA {
+    smiles: "C=C(C)C(=O)OC"
+    polymerization: vinyl
+  }
+
+  monomer BA {
+    smiles: "C=CC(=O)OCCCC"
+    polymerization: vinyl
+  }
+
+  architecture: linear
+  sequence: random_copolymer {
+    units: [MMA, BA]
+    composition: {MMA: 0.70, BA: 0.20}
+  }
+}

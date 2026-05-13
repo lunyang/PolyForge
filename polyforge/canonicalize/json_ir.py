@@ -85,6 +85,20 @@ def _stereochemistry_ir(stereochemistry: Stereochemistry | None) -> dict[str, An
 def _target_ir(target: PropertyTarget) -> dict[str, Any]:
     result: dict[str, Any] = {"property": target.name}
     for key in sorted(target.fields):
+        if key == "value":
+            value = target.fields[key]
+            if isinstance(value, dict) and value.get("explicit_unknown"):
+                result["target_value"] = value
+                continue
+            if hasattr(value, "value"):
+                result["target_value"] = float(value.value)
+                result["target_units"] = getattr(value, "unit", None)
+                continue
+            result["target_value"] = value
+            continue
+        if key == "units":
+            result["target_units"] = normalize_unknown(target.fields[key])
+            continue
         canonical_key, canonical_value = normalize_measurement_field(key, target.fields[key])
         result[canonical_key] = canonical_value
     return result

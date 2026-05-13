@@ -1,0 +1,25 @@
+polymer PMMA {
+  monomer MMA {
+    smiles: "C=C(C)C(=O)OC"
+    polymerization: vinyl
+    attach: inferred
+  }
+
+  architecture: linear
+  sequence: homopolymer(MMA)
+
+  molecular_weight {
+    Mn: 120000 g/mol
+    dispersity: 1.6
+  }
+
+  stereochemistry {
+    tacticity: atactic
+  }
+
+  predict Tg {
+    method: DSC
+    heating_rate: 10 K/min
+    sample_state: amorphous
+  }
+}

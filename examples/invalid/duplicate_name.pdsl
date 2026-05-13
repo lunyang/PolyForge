@@ -1,0 +1,14 @@
+polymer DuplicateMonomer {
+  monomer MMA {
+    smiles: "C=C(C)C(=O)OC"
+    polymerization: vinyl
+  }
+
+  monomer MMA {
+    smiles: "C=CC(=O)OCCCC"
+    polymerization: vinyl
+  }
+
+  architecture: linear
+  sequence: homopolymer(MMA)
+}

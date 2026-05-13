@@ -1,0 +1,26 @@
+polymer PS_b_PMMA {
+  monomer Styrene {
+    smiles: "C=CC1=CC=CC=C1"
+    polymerization: vinyl
+    attach: inferred
+  }
+
+  monomer MMA {
+    smiles: "C=C(C)C(=O)OC"
+    polymerization: vinyl
+    attach: inferred
+  }
+
+  architecture: linear
+  sequence: block_copolymer {
+    blocks: [
+      block(Styrene, DP=100),
+      block(MMA, DP=80)
+    ]
+  }
+
+  molecular_weight {
+    Mn: 25000 g/mol
+    dispersity: 1.2
+  }
+}
