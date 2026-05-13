@@ -34,6 +34,30 @@ The language is designed for compiler use, not as a general-purpose programming 
 
 The literal `unknown` is reserved for optional metadata fields that are intentionally unset.
 
+Reserved keywords and literals in v0.1 include:
+
+- `polymer`
+- `monomer`
+- `architecture`
+- `sequence`
+- `homopolymer`
+- `random_copolymer`
+- `alternating_copolymer`
+- `block_copolymer`
+- `block`
+- `predict`
+- `molecular_weight`
+- `stereochemistry`
+- `vinyl`
+- `step_growth`
+- `ring_opening`
+- `atactic`
+- `isotactic`
+- `syndiotactic`
+- `inferred`
+- `unknown`
+- `linear`
+
 ## 4. Top-level structure
 
 ```text
@@ -118,7 +142,7 @@ Rules:
 
 - at least two units
 - all referenced units must be defined
-- composition fractions must sum to 1.0 within a small numeric tolerance
+- composition fractions must sum to 1.0 within an absolute tolerance of 1e-6
 - all fractions must be non-negative
 
 ### 7.3 Alternating copolymer
@@ -230,6 +254,7 @@ The compiler must enforce the following:
 | Block DPs must be positive | Error |
 | `Mn`, `Mw`, `DPn` must be positive | Error |
 | `dispersity` must be >= 1.0 | Error |
+| Random-copolymer composition sum must satisfy `abs(sum - 1.0) <= 1e-6` | Error |
 | Attachment inference must be unambiguous | Error or warning, depending on the case |
 | Missing but optional metadata may be `unknown` | Warning or accepted null |
 
@@ -248,7 +273,10 @@ The canonical IR is a normalized JSON object. It is the source of truth for expo
       "original_name": "MMA",
       "canonical_smiles": "COC(=O)C(C)=C",
       "polymerization": "vinyl",
-      "attach": ["inferred"]
+      "attach": ["inferred"],
+      "provenance": {
+        "attach": "inferred"
+      }
     }
   },
   "architecture": "linear",
@@ -268,12 +296,14 @@ The canonical IR is a normalized JSON object. It is the source of truth for expo
     {
       "property": "Tg",
       "method": "DSC",
-      "heating_rate": "10 K/min",
-      "pressure": "1 atm",
+      "heating_rate_K_per_min": 10.0,
+      "pressure_Pa": 101325.0,
       "sample_state": "amorphous"
     }
   ],
   "metadata": {},
+  "rdkit_version": "2025.03",
+  "structure_hash": "sha256:...",
   "canonical_id": "PolyForge:v0.1:sha256:..."
 }
 ```
@@ -284,10 +314,94 @@ The canonical IR is a normalized JSON object. It is the source of truth for expo
 - Preserve ordered constructs such as block order
 - Sort unordered mappings by canonical key
 - Normalize numeric units before hashing
-- Represent missing optional values as `null` in canonical JSON
-- Compute a stable hash over the canonical JSON serialization
+- Represent omitted optional values as `null` in canonical JSON
+- Preserve explicit unknown values as explicit unknown values
+- Compute a stable hash over the canonical JSON serialization with UTF-8 encoding, sorted keys, no trailing newline, and without the `canonical_id` field
 
-### 12.2 Provenance
+### 12.2 Canonical ID format
+
+Canonical IDs must use this format:
+
+```text
+PolyForge:{schema_version}:sha256:{hex}
+```
+
+The hash input is the canonical JSON serialization of the IR after removing the `canonical_id` field.
+
+### 12.3 Units and provenance
+
+Canonical IR should use unit-suffixed keys when the unit is known:
+
+- `Mn_g_mol`
+- `Mw_g_mol`
+- `heating_rate_K_per_min`
+- `pressure_Pa`
+- `temperature_K`
+
+The source syntax may use strings such as `10 K/min`, but the canonical IR must normalize them to numeric values with explicit unit-suffixed keys.
+
+Explicitly inferred values must retain provenance in a dedicated subobject rather than through emitter-specific conventions.
+
+### 12.4 Sequence examples
+
+Homopolymer:
+
+```json
+{
+  "sequence": {
+    "type": "homopolymer",
+    "monomer": "M0"
+  }
+}
+```
+
+Random copolymer:
+
+```json
+{
+  "sequence": {
+    "type": "random_copolymer",
+    "units": ["M0", "M1"],
+    "composition": {
+      "M0": 0.7,
+      "M1": 0.3
+    }
+  }
+}
+```
+
+Alternating copolymer:
+
+```json
+{
+  "sequence": {
+    "type": "alternating_copolymer",
+    "units": ["M0", "M1"]
+  }
+}
+```
+
+Block copolymer:
+
+```json
+{
+  "sequence": {
+    "type": "block_copolymer",
+    "blocks": [
+      {
+        "monomer": "M0",
+        "DP": 100
+      },
+      {
+        "monomer": "M1",
+        "DP": 80
+      }
+    ]
+  }
+}
+```
+
+### 12.5 Provenance
 
 If a value was inferred, the canonical IR should retain that fact in the relevant field or metadata. Inference must not be silently lost.
 

@@ -108,7 +108,7 @@ Use `pyproject.toml` and `uv`.
 Core dependencies:
 
 - `lark`
-- `rdkit`
+- `rdkit` pinned to a specific minor version in `pyproject.toml`
 - `pandas`
 - `numpy`
 - `scikit-learn`
@@ -148,6 +148,8 @@ Canonical JSON should include:
 - `targets`
 - `metadata`
 - `canonical_id`
+- `rdkit_version`
+- `structure_hash`
 
 Normalization rules:
 
@@ -156,7 +158,61 @@ Normalization rules:
 - unordered maps are sorted
 - numeric units are normalized where unambiguous
 - missing optional values become `null`
-- `canonical_id` is a stable hash of the canonical serialization
+- explicitly unknown values remain explicit
+- `canonical_id` is `PolyForge:{schema}:sha256:{hex}`
+- the hash input is the canonical JSON serialization with UTF-8 encoding, sorted keys, no trailing newline, and without the `canonical_id` field itself
+- `structure_hash` is a stable hash over the structural part of the canonical IR, excluding measurement-only metadata
+- `rdkit_version` records the pinned RDKit minor version used for canonical chemistry normalization
+
+### 6.2 Units and values
+
+Canonical numeric fields should use explicit unit-suffixed keys.
+
+Mandatory canonical unit mappings for v0.1:
+
+- `Mn` -> `Mn_g_mol`
+- `Mw` -> `Mw_g_mol`
+- `DPn` -> `DPn`
+- `heating_rate` -> `heating_rate_K_per_min`
+- `pressure` -> `pressure_Pa`
+- `temperature` -> `temperature_K`
+
+Rules:
+
+- canonical numeric fields use `{name}_{unit_snake}` when units are applicable
+- strings such as `10 K/min` are only allowed in source syntax, not in canonical IR
+- `predict` metadata should canonicalize into numeric values with unit-suffixed keys whenever a unit is known
+
+### 6.3 Explicit unknowns and provenance
+
+PolyForge must distinguish:
+
+- omitted value
+- explicit `unknown`
+- inferred value
+
+Suggested canonical representation:
+
+- omitted value -> `null`
+- explicit unknown -> `{"value": null, "explicit_unknown": true}`
+- inferred value -> regular field plus provenance metadata
+
+Provenance should be stored in a dedicated subobject, not encoded ad hoc per field.
+
+Example:
+
+```json
+{
+  "monomers": {
+    "M0": {
+      "attach": ["inferred"],
+      "provenance": {
+        "attach": "inferred"
+      }
+    }
+  }
+}
+```
 
 ## 7. Pipeline
 
@@ -280,6 +336,7 @@ Behavior:
 - run all checks
 - print diagnostics
 - print canonical ID when validation succeeds
+- reject canonical JSON whose `schema` version is unsupported
 - exit 0 on success, nonzero on error
 
 Warnings do not fail the command by default.
@@ -327,6 +384,19 @@ Behavior:
 - include `canonical_id` and source metadata
 - include target columns when present
 - write a CSV with stable column names and deterministic column order
+- support either repeated `--input` arguments or `--inputs-dir`; do not rely on shell glob expansion alone
+
+Fixed CSV prefix columns:
+
+- `canonical_id`
+- `source_file`
+- `source_format`
+- `structure_hash`
+- `target_property`
+- `target_value`
+- `target_units`
+
+Descriptor columns must appear after the fixed prefix, sorted alphabetically.
 
 ### 8.4 `train`
 
@@ -342,7 +412,9 @@ Behavior:
 - do not read `.pdsl` directly
 - do not clean raw data automatically
 - train a baseline model only
-- use a deterministic 5-fold cross-validation protocol by default
+- use a deterministic grouped 5-fold cross-validation protocol by default
+- group rows by `structure_hash`
+- require `--split random` for plain random splits
 - refit the chosen model on the full feature table after evaluation
 - save metrics and model artifacts to a run directory
 
@@ -398,6 +470,7 @@ Requirements:
 - include polymer descriptors from the IR
 - include measurement or target metadata where available
 - avoid implicit imputation
+- share the same feature builder as `featurize`
 
 ### 9.4 Limited BigSMILES exporter
 
@@ -408,6 +481,14 @@ Requirements:
 - support only the v0.1 structural subset
 - fail explicitly on unsupported cases
 - do not pretend to be lossless
+- use the following support matrix:
+
+| sequence type | support | note |
+| --- | --- | --- |
+| homopolymer | yes | emit a single stochastic object |
+| alternating copolymer | yes | emit a deterministic alternating structure |
+| block copolymer | yes | emit ordered stochastic segments |
+| random copolymer | conditional | emit only when composition is explicit; otherwise fail |
 
 ## 10. Diagnostics and errors
 
@@ -475,6 +556,7 @@ Tests should follow the compiler layers.
 - token export is stable
 - descriptor export includes expected keys
 - limited BigSMILES export fails on unsupported cases
+- canonicalization is idempotent after JSON round-trip
 
 ### 11.5 CLI smoke tests
 
@@ -489,6 +571,7 @@ Tests should follow the compiler layers.
 - metric calculation
 - deterministic output with fixed random seed
 - failure on missing target column or non-numeric target
+- grouped split keeps identical `structure_hash` rows in the same fold
 
 ## 12. Repository inputs
 
@@ -543,6 +626,8 @@ Deliverables:
 - canonicalization
 - hash generation
 - canonical JSON export
+- provenance tracking
+- explicit unknown handling
 
 ### Milestone 5: Exporters
 
@@ -559,6 +644,7 @@ Deliverables:
 - feature CSV generation
 - baseline model training
 - metrics and artifact outputs
+- grouped cross-validation
 
 ## 14. Acceptance criteria
 
