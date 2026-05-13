@@ -1,0 +1,26 @@
+First attempt:
+
+```pdsl
+polymer BadCandidate {
+  monomer MMA {
+    smiles: "not a smiles"
+    polymerization: vinyl
+  }
+  architecture: branched
+  sequence: homopolymer(MMA)
+}
+```
+
+Repaired candidate:
+
+```pdsl
+polymer RepairedCandidate {
+  monomer MMA {
+    smiles: "C=C(C)C(=O)OC"
+    polymerization: vinyl
+    attach: inferred
+  }
+  architecture: linear
+  sequence: homopolymer(MMA)
+}
+```

@@ -1,0 +1,18 @@
+Here is a valid PolyForge candidate:
+
+```pdsl
+polymer LLM_PMMA {
+  monomer MMA {
+    smiles: "C=C(C)C(=O)OC"
+    polymerization: vinyl
+    attach: inferred
+  }
+
+  architecture: linear
+  sequence: homopolymer(MMA)
+
+  predict Tg {
+    value: unknown
+  }
+}
+```
