@@ -133,3 +133,25 @@ def test_export_backends_emit_expected_output(tmp_path):
         assert result.returncode == 0
         assert result.stdout.strip() == expected
         assert result.stderr == ""
+
+
+def test_validate_rejects_structurally_invalid_canonical_json(tmp_path):
+    canonical = _canonical(PMMA_STRICT)
+    canonical.pop("name")
+    path = tmp_path / "invalid-canonical.json"
+    path.write_text(json.dumps(canonical), encoding="utf-8")
+
+    result = _run_cli("validate", str(path))
+
+    assert result.returncode != 0
+    assert "invalid_canonical_json" in result.stderr
+    assert "missing required canonical IR field: name" in result.stderr
+
+
+def test_schema_show_outputs_canonical_ir_schema():
+    result = _run_cli("schema", "show", "v0.1")
+
+    assert result.returncode == 0
+    payload = json.loads(result.stdout)
+    assert payload["$id"] == "https://polyforge.dev/schemas/canonical-ir-v0.1.schema.json"
+    assert payload["properties"]["schema"]["const"] == "polyforge.v0.1"

@@ -6,6 +6,8 @@ import sys
 from collections.abc import Sequence
 from pathlib import Path
 
+from polyforge.canonicalize.json_ir import dumps_canonical_json
+from polyforge.canonicalize.schema import load_canonical_ir_schema
 from polyforge.emit.bigsmiles import export_bigsmiles
 from polyforge.emit.descriptors import descriptor_row
 from polyforge.emit.json import export_json
@@ -41,6 +43,12 @@ def build_parser() -> argparse.ArgumentParser:
     train.add_argument("--run-dir", required=True, help="Directory for training artifacts")
     train.add_argument("--split", choices=["grouped", "random"], default="grouped")
     train.set_defaults(handler=_handle_train)
+
+    schema = subparsers.add_parser("schema", help="Inspect PolyForge schemas")
+    schema_subparsers = schema.add_subparsers(dest="schema_command", required=True)
+    schema_show = schema_subparsers.add_parser("show", help="Show a packaged schema")
+    schema_show.add_argument("version", choices=["v0.1"], help="Schema version to show")
+    schema_show.set_defaults(handler=_handle_schema_show)
 
     return parser
 
@@ -121,6 +129,14 @@ def _handle_train(args) -> int:
         return 1
 
     print(str(result.run_dir))
+    return 0
+
+
+def _handle_schema_show(args) -> int:
+    if args.version != "v0.1":  # pragma: no cover - argparse constrains choices
+        print(f"unsupported schema version: {args.version}", file=sys.stderr)
+        return 1
+    print(dumps_canonical_json(load_canonical_ir_schema()))
     return 0
 
 

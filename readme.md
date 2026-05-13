@@ -38,6 +38,12 @@ python -m polyforge export examples/pmma.pdsl --to descriptors
 python -m polyforge export examples/pmma.pdsl --to bigsmiles
 ```
 
+Show the canonical IR schema:
+
+```bash
+python -m polyforge schema show v0.1
+```
+
 Build a feature table:
 
 ```bash

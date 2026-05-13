@@ -1,0 +1,102 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://polyforge.dev/schemas/canonical-ir-v0.1.schema.json",
+  "title": "PolyForge Canonical IR v0.1",
+  "type": "object",
+  "required": [
+    "schema",
+    "name",
+    "monomers",
+    "architecture",
+    "sequence",
+    "molecular_weight",
+    "stereochemistry",
+    "targets",
+    "metadata",
+    "rdkit_version",
+    "structure_hash",
+    "canonical_id"
+  ],
+  "properties": {
+    "schema": {
+      "const": "polyforge.v0.1"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "monomers": {
+      "type": "object",
+      "patternProperties": {
+        "^M[0-9]+$": {
+          "type": "object",
+          "required": [
+            "original_name",
+            "canonical_smiles",
+            "polymerization",
+            "attach",
+            "provenance"
+          ],
+          "properties": {
+            "original_name": {
+              "type": "string"
+            },
+            "canonical_smiles": {
+              "type": ["string", "null"]
+            },
+            "polymerization": {
+              "type": "string"
+            },
+            "attach": {
+              "type": ["array", "null"],
+              "items": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "provenance": {
+              "type": "object"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "architecture": {
+      "const": "linear"
+    },
+    "sequence": {
+      "type": "object",
+      "required": ["type"]
+    },
+    "molecular_weight": {
+      "type": ["object", "null"]
+    },
+    "stereochemistry": {
+      "type": ["object", "null"]
+    },
+    "targets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["property"]
+      }
+    },
+    "metadata": {
+      "type": "object"
+    },
+    "rdkit_version": {
+      "type": "string"
+    },
+    "structure_hash": {
+      "type": ["string", "null"],
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "canonical_id": {
+      "type": ["string", "null"],
+      "pattern": "^PolyForge:v0\\.1:sha256:[0-9a-f]{64}$"
+    }
+  },
+  "additionalProperties": false
+}

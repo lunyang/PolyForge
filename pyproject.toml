@@ -28,6 +28,7 @@ include = ["polyforge*"]
 
 [tool.setuptools.package-data]
 "polyforge.grammar" = ["polyforge.lark"]
+"polyforge.schema" = ["*.json"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

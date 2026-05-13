@@ -1,0 +1,1 @@
+"""Packaged PolyForge schema resources."""

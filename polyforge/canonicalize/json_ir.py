@@ -11,6 +11,7 @@ from polyforge.canonicalize.normalize import (
     normalize_unknown,
     numeric_value,
 )
+from polyforge.canonicalize.schema import validate_canonical_ir
 from polyforge.check.chemistry import check_program_chemistry
 from polyforge.ir.nodes import (
     AlternatingCopolymerSequence,
@@ -163,8 +164,9 @@ def canonicalize_program(program: PolymerProgram, filename: str | None = None) -
 
 
 def canonicalize_ir(ir: dict[str, Any]) -> dict[str, Any]:
-    if ir.get("schema") != SCHEMA:
-        raise ValueError(f"unsupported canonical schema: {ir.get('schema')}")
+    errors = validate_canonical_ir(ir)
+    if errors:
+        raise ValueError("; ".join(errors))
     normalized = copy.deepcopy(ir)
     normalized.pop("canonical_id", None)
     normalized.pop("structure_hash", None)
