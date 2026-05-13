@@ -39,7 +39,7 @@ alternating_copolymer_expr: "alternating_copolymer" "(" IDENT "," IDENT ")"
 block_copolymer_expr: "block_copolymer" "{" blocks_stmt* "}"
 blocks_stmt: "blocks" ":" block_list
 block_list: "[" [block_expr ("," block_expr)*] "]"
-block_expr: "block" "(" IDENT "," "DP" "=" NUMBER ")"
+block_expr: "block" "(" IDENT ["," "DP" "=" NUMBER] ")"
 
 molecular_weight_block: "molecular_weight" "{" mw_stmt* "}"
 mw_stmt: mn_stmt
@@ -83,4 +83,3 @@ LINE_COMMENT: /\/\/[^\n]*/
 %ignore WS
 %ignore COMMENT
 %ignore LINE_COMMENT
-

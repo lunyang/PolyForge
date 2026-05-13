@@ -106,7 +106,7 @@ class _AstTransformer(Transformer):
     def alternating_copolymer_expr(self, monomer_a: str, monomer_b: str):
         return AlternatingCopolymerSequence(units=[monomer_a, monomer_b])
 
-    def block_expr(self, monomer: str, dp: int | float):
+    def block_expr(self, monomer: str, dp: int | float | None = None):
         return Block(monomer=monomer, DP=dp)
 
     def block_list(self, *blocks):
@@ -167,6 +167,7 @@ class _AstTransformer(Transformer):
         return PropertyTarget(name=name, fields=dict(stmts))
 
     def polymer_def(self, name: str, *stmts):
+        monomer_definitions: list[MonomerDef] = []
         monomers: dict[str, MonomerDef] = {}
         architecture: str | None = None
         sequence = None
@@ -176,6 +177,7 @@ class _AstTransformer(Transformer):
 
         for stmt in stmts:
             if isinstance(stmt, MonomerDef):
+                monomer_definitions.append(stmt)
                 monomers[stmt.name] = stmt
             elif isinstance(stmt, str):
                 architecture = stmt
@@ -203,6 +205,7 @@ class _AstTransformer(Transformer):
             molecular_weight=molecular_weight,
             stereochemistry=stereochemistry,
             property_targets=property_targets,
+            monomer_definitions=tuple(monomer_definitions),
         )
 
     def start(self, program: PolymerProgram):

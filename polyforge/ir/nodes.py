@@ -41,7 +41,7 @@ class PropertyTarget:
 @dataclass(frozen=True)
 class Block:
     monomer: str
-    DP: float | int
+    DP: float | int | None = None
 
 
 @dataclass(frozen=True)
@@ -53,7 +53,7 @@ class HomopolymerSequence:
 @dataclass(frozen=True)
 class RandomCopolymerSequence:
     units: list[str]
-    composition: dict[str, float | int]
+    composition: dict[str, Quantity | float | int]
     kind: str = field(init=False, default="random_copolymer")
 
 
@@ -81,4 +81,4 @@ class PolymerProgram:
     molecular_weight: MolecularWeight | None = None
     stereochemistry: Stereochemistry | None = None
     property_targets: list[PropertyTarget] = field(default_factory=list)
-
+    monomer_definitions: tuple[MonomerDef, ...] = field(default_factory=tuple)
