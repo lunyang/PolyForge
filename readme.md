@@ -9,6 +9,7 @@ PolyForge is a typed polymer DSL and compiler for property prediction and invers
 - [Research positioning](docs/research_positioning.md)
 - [Compiler architecture](docs/compiler_architecture.md)
 - [BigSMILES import and inverse design](docs/bigsmiles_inverse_design.md)
+- [Paper experiments](docs/paper_experiments.md)
 
 ## v0.1 scope
 
@@ -54,6 +55,12 @@ Train a baseline model:
 
 ```bash
 python -m polyforge train tg_features.csv --model random_forest --run-dir runs/random_forest
+```
+
+Run the paper Tg benchmark workflow:
+
+```bash
+python -m experiments.tg_benchmark.cli --dataset bigsmiles-Tg.csv --out runs/tg_benchmark
 ```
 
 ## Out of scope for v0.1
