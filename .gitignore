@@ -4,6 +4,7 @@ __pycache__/
 .pytest_cache/
 .ruff_cache/
 .mypy_cache/
+.vscode/
 .venv/
 venv/
 dist/
@@ -11,6 +12,7 @@ build/
 *.egg-info/
 
 dataset/
+runs/
 bigsmiles-Tg.csv
 *.pdf
 *.xlsx
